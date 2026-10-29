@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# Env
+.env
+
+# Generated data (images/heatmaps are regenerated on demand)
+data/images/*.png
+data/heatmaps/*.png
+!data/images/.gitkeep
+!data/heatmaps/.gitkeep
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/

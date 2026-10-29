@@ -1,0 +1,47 @@
+# One command to run everything:
+#     docker compose up --build
+# Then open  http://localhost:5173
+#
+# Services:
+#   db        Postgres (stores the event log)
+#   api       FastAPI + the durable worker + the real CV detector
+#   frontend  the website (nginx), served on :5173, proxies /api to the api
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: visionflow
+      POSTGRES_PASSWORD: visionflow
+      POSTGRES_DB: visionflow
+    volumes:
+      - vf_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U visionflow"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: ./backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      VF_DATABASE_URL: postgresql://visionflow:visionflow@db:5432/visionflow
+      VF_CV_BACKEND: local
+      VF_SIM_DELAY_MS: "250"
+    volumes:
+      - vf_data:/app/data
+    ports:
+      - "8000:8000"      # handy for direct API access / debugging
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - api
+    ports:
+      - "5173:80"
+
+volumes:
+  vf_pgdata:
+  vf_data:

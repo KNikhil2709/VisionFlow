@@ -1,0 +1,28 @@
+# Render blueprint: deploys the backend (Docker) + a managed Postgres together.
+# In Render: New -> Blueprint -> pick this repo. After it deploys, copy the API
+# URL and set it as VITE_API_URL in Vercel, then set VF_CORS_ORIGINS here to your
+# Vercel URL and redeploy.
+services:
+  - type: web
+    name: visionflow-api
+    runtime: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
+    plan: free
+    healthCheckPath: /api/health
+    numInstances: 1          # single instance: one durable worker, no contention
+    envVars:
+      - key: VF_DATABASE_URL
+        fromDatabase:
+          name: visionflow-db
+          property: connectionString
+      - key: VF_CV_BACKEND
+        value: local
+      - key: VF_SIM_DELAY_MS
+        value: "250"
+      - key: VF_CORS_ORIGINS
+        value: "*"           # change to your Vercel origin after first deploy
+
+databases:
+  - name: visionflow-db
+    plan: free
